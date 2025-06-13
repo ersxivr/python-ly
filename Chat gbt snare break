@@ -1,0 +1,53 @@
+import matplotlib.pyplot as plt
+import music21 as m21
+
+# Create a 4/4 time signature and set the tempo
+ts = m21.meter.TimeSignature('4/4')
+tempo = m21.tempo.MetronomeMark(number=144)
+
+# Define the snare part
+snare_part = m21.stream.Part()
+snare_part.append(ts)
+snare_part.append(tempo)
+
+# Define a helper function to add a measure with a given rhythm
+def add_measure(rhythm_list):
+    measure = m21.stream.Measure()
+    for val in rhythm_list:
+        if val == 'flam':
+            # Flam: grace note followed by a main note
+            grace = m21.note.Note('C5', type='16th')
+            grace.duration.quarterLength = 0.25
+            grace.stemDirection = 'up'
+            main = m21.note.Note('C5', type='16th')
+            main.stemDirection = 'up'
+            main.expressions.append(m21.expressions.GraceNote(grace))
+            measure.append(main)
+        elif val == 'buzz':
+            n = m21.note.Note('C5', type='8th')
+            n.stemDirection = 'up'
+            n.articulations.append(m21.articulations.Tremolo(3))
+            measure.append(n)
+        elif val == 'roll':
+            n = m21.note.Note('C5', type='quarter')
+            n.stemDirection = 'up'
+            n.articulations.append(m21.articulations.Tremolo(3))
+            measure.append(n)
+        else:
+            n = m21.note.Note('C5', type=val)
+            n.stemDirection = 'up'
+            measure.append(n)
+    snare_part.append(measure)
+
+# Add sample measures (simplified)
+add_measure(['16th'] * 16)  # Bar 1: 16th note grid
+add_measure(['flam', '16th', '16th', 'flam', '16th', '16th', '16th', '16th'])  # Bar 3
+add_measure(['flam', 'buzz', 'buzz', '8th', '8th'])  # Bar 7
+add_measure(['roll', 'roll', '16th', '16th', '16th', '16th'])  # Bar 16
+
+# Create a score and add the snare part
+score = m21.stream.Score()
+score.insert(0, snare_part)
+
+# Show the notation (export image with Lilypond)
+score.write('lily.png', fmt='lily.png')
